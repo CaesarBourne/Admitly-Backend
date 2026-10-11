@@ -1,0 +1,8 @@
+node_modules/
+dist/
+data/
+.env
+.env.local
+*.sqlite
+docs/swagger-spec.json
+.DS_Store
