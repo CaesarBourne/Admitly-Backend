@@ -5,6 +5,7 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import { AdminUsersService } from '../../admin-users/admin-users.service';
 import { AuthUser } from '../../common/decorators/current-user.decorator';
 import { Role } from '../../common/enums/role.enum';
+import { inviteeGroupInfo } from '../../invitees/entities/invitee.entity';
 import { InviteesService } from '../../invitees/invitees.service';
 import { OrganizationsService } from '../../organizations/organizations.service';
 
@@ -66,7 +67,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       eventId: invitee.eventId,
       name: invitee.name,
       seatNumber: invitee.seatNumber,
-      seatGroupName: invitee.seatGroup?.name ?? null,
+      ...inviteeGroupInfo(invitee),
       inactive: invitee.inactive,
       admissionStatus: invitee.admissionStatus,
       jti: payload.jti,

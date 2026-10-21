@@ -20,7 +20,7 @@ export class SeatGroupsService {
     const trimmed = name.trim();
     const exists = await this.repo.findOne({ where: { eventId, name: trimmed } });
     if (exists) {
-      throw new ConflictException('A seat group with that name already exists for this event.');
+      throw new ConflictException('A group with that name already exists for this event.');
     }
     const group = this.repo.create({
       orgId,
@@ -42,7 +42,7 @@ export class SeatGroupsService {
   /** Scoped lookup — throws if the group doesn't exist or belongs to another org. */
   async findForOrg(id: string, orgId: string): Promise<SeatGroup> {
     const group = await this.repo.findOne({ where: { id, orgId } });
-    if (!group) throw new NotFoundException('Seat group not found.');
+    if (!group) throw new NotFoundException('Group not found.');
     return group;
   }
 

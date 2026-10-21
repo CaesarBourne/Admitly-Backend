@@ -11,7 +11,8 @@ import {
 import { Event } from '../../events/entities/event.entity';
 import { Invitee } from './invitee.entity';
 
-/** Named seating group (e.g. "Groomsmen", "VIP Table 3") scoped to one event. */
+/** Optional named invitee group (a table, team, section…) scoped to one event.
+ *  What a group is called is set per event via Event.groupLabel. */
 @Entity('seat_groups')
 export class SeatGroup {
   @PrimaryGeneratedColumn('uuid')

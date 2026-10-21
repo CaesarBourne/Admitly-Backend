@@ -42,18 +42,18 @@ export class InviteesService {
 
   /** Scoped lookup — throws if the invitee doesn't exist or belongs to another org. */
   async findForOrg(id: string, orgId: string): Promise<Invitee> {
-    const invitee = await this.repo.findOne({ where: { id, orgId }, relations: ['seatGroup'] });
+    const invitee = await this.repo.findOne({ where: { id, orgId }, relations: ['seatGroup', 'event'] });
     if (!invitee) throw new NotFoundException('Invitee not found.');
     return invitee;
   }
 
   /** Unscoped lookup by id — used by the public avatar redirect and JWT validation. */
   async findById(id: string): Promise<Invitee | null> {
-    return this.repo.findOne({ where: { id }, relations: ['seatGroup'] });
+    return this.repo.findOne({ where: { id }, relations: ['seatGroup', 'event'] });
   }
 
   findByToken(token: string): Promise<Invitee | null> {
-    return this.repo.findOne({ where: { inviteToken: token }, relations: ['seatGroup'] });
+    return this.repo.findOne({ where: { inviteToken: token }, relations: ['seatGroup', 'event'] });
   }
 
   async setCurrentJti(id: string, jti: string): Promise<void> {
@@ -73,15 +73,15 @@ export class InviteesService {
     await this.repo.update(id, { seatNumber });
   }
 
-  /** Assigns (or clears) an invitee's seat group, enforcing that group's maxSize. */
+  /** Assigns (or clears) an invitee's group, enforcing that group's maxSize. */
   async setSeatGroup(id: string, orgId: string, seatGroupId: string | null): Promise<void> {
     const invitee = await this.findForOrg(id, orgId);
 
     if (seatGroupId) {
       const group = await this.seatGroupRepo.findOne({ where: { id: seatGroupId, orgId } });
-      if (!group) throw new NotFoundException('Seat group not found.');
+      if (!group) throw new NotFoundException('Group not found.');
       if (group.eventId !== invitee.eventId) {
-        throw new ForbiddenException('That seat group belongs to a different event.');
+        throw new ForbiddenException('That group belongs to a different event.');
       }
 
       if (invitee.seatGroupId !== seatGroupId) {

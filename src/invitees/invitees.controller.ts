@@ -96,7 +96,7 @@ export class InviteesController {
   }
 
   @Patch('invitees/:id/seat-group')
-  @ApiOperation({ summary: "Assign (or clear) an invitee's seat group (admin+)." })
+  @ApiOperation({ summary: "Assign (or clear) an invitee's group (admin+)." })
   async setSeatGroup(
     @CurrentUser() admin: AuthUser,
     @Param('id') id: string,

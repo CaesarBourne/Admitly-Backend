@@ -47,7 +47,7 @@ export class SeatGroupsController {
   ) {}
 
   @Get('events/:eventId/seat-groups')
-  @ApiOperation({ summary: 'List all seat groups for an event with their invitee counts (admin+).' })
+  @ApiOperation({ summary: 'List all invitee groups for an event with their invitee counts (admin+).' })
   async findAll(@CurrentUser() admin: AuthUser, @Param('eventId') eventId: string) {
     await this.events.findForOrg(eventId, admin.orgId);
     const groups = await this.seatGroups.findAllForEvent(eventId, admin.orgId);
@@ -55,7 +55,7 @@ export class SeatGroupsController {
   }
 
   @Post('events/:eventId/seat-groups')
-  @ApiOperation({ summary: 'Create a named seat group for an event (admin+).' })
+  @ApiOperation({ summary: 'Create a named invitee group for an event (admin+).' })
   async create(
     @CurrentUser() admin: AuthUser,
     @Param('eventId') eventId: string,
@@ -67,7 +67,7 @@ export class SeatGroupsController {
   }
 
   @Patch('seat-groups/:id')
-  @ApiOperation({ summary: 'Rename a seat group or change its max size (admin+).' })
+  @ApiOperation({ summary: 'Rename a group or change its max size (admin+).' })
   async update(
     @CurrentUser() admin: AuthUser,
     @Param('id') id: string,
@@ -78,7 +78,7 @@ export class SeatGroupsController {
   }
 
   @Delete('seat-groups/:id')
-  @ApiOperation({ summary: "Delete a seat group (its invitees keep their seat number, admin+)." })
+  @ApiOperation({ summary: "Delete a group (its invitees keep their seat number, admin+)." })
   async delete(@CurrentUser() admin: AuthUser, @Param('id') id: string) {
     await this.seatGroups.delete(id, admin.orgId);
     return { deleted: true };

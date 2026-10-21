@@ -4,6 +4,7 @@ import { AuthUser, CurrentUser } from '../common/decorators/current-user.decorat
 import { Public } from '../common/decorators/public.decorator';
 import { Roles } from '../common/decorators/roles.decorator';
 import { Role } from '../common/enums/role.enum';
+import { inviteeGroupInfo } from '../invitees/entities/invitee.entity';
 import { AuthService } from './auth.service';
 import { InviteeTokenDto } from './dto/invitee-token.dto';
 import { LoginDto } from './dto/login.dto';
@@ -61,7 +62,7 @@ export class AuthController {
       admissionStatus: invitee.admissionStatus,
       admittedAt: invitee.admittedAt,
       seatNumber: invitee.seatNumber,
-      seatGroupName: invitee.seatGroup?.name ?? null,
+      ...inviteeGroupInfo(invitee),
       avatarUrl: invitee.avatarPath ? `/invitees/${invitee.id}/avatar` : null,
     };
   }

@@ -7,7 +7,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Event } from '../../events/entities/event.entity';
+import { Event, groupLabelOf } from '../../events/entities/event.entity';
 import { SeatGroup } from './seat-group.entity';
 
 @Entity('invitees')
@@ -71,4 +71,14 @@ export class Invitee {
 
   @UpdateDateColumn()
   updatedAt: Date;
+}
+
+/** Group info as shown to invitees/scanners — hidden when the event has grouping off.
+ *  Expects `event` and `seatGroup` relations to be loaded. */
+export function inviteeGroupInfo(invitee: Invitee) {
+  const enabled = invitee.event?.groupingEnabled ?? false;
+  return {
+    seatGroupName: enabled ? (invitee.seatGroup?.name ?? null) : null,
+    groupLabel: groupLabelOf(invitee.event),
+  };
 }

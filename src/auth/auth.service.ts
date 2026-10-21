@@ -3,7 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import { randomUUID } from 'node:crypto';
 import { AdminUsersService } from '../admin-users/admin-users.service';
 import { Role } from '../common/enums/role.enum';
-import { Invitee } from '../invitees/entities/invitee.entity';
+import { Invitee, inviteeGroupInfo } from '../invitees/entities/invitee.entity';
 import { InviteesService } from '../invitees/invitees.service';
 import { OrganizationsService } from '../organizations/organizations.service';
 import { LoginDto } from './dto/login.dto';
@@ -30,6 +30,7 @@ export interface InviteeAuthResult {
     name: string;
     seatNumber: string | null;
     seatGroupName: string | null;
+    groupLabel: string;
     inactive: boolean;
     admissionStatus: 'pending' | 'admitted';
   };
@@ -122,7 +123,7 @@ export class AuthService {
       eventId: invitee.eventId,
       name: invitee.name,
       seatNumber: invitee.seatNumber,
-      seatGroupName: invitee.seatGroup?.name ?? null,
+      ...inviteeGroupInfo(invitee),
       inactive: invitee.inactive,
       admissionStatus: invitee.admissionStatus,
     };

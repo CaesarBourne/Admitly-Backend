@@ -9,12 +9,34 @@ export class EventsService {
     @InjectRepository(Event) private readonly repo: Repository<Event>,
   ) {}
 
-  async create(orgId: string, name: string, eventDate: string | null): Promise<Event> {
+  async create(
+    orgId: string,
+    name: string,
+    eventDate: string | null,
+    grouping: { groupingEnabled?: boolean; groupLabel?: string | null } = {},
+  ): Promise<Event> {
     const event = this.repo.create({
       orgId,
       name: name.trim(),
       eventDate: eventDate ? new Date(eventDate) : null,
+      groupingEnabled: grouping.groupingEnabled ?? false,
+      groupLabel: grouping.groupLabel?.trim() || null,
     });
+    return this.repo.save(event);
+  }
+
+  async update(
+    id: string,
+    orgId: string,
+    changes: { name?: string; eventDate?: string | null; groupingEnabled?: boolean; groupLabel?: string | null },
+  ): Promise<Event> {
+    const event = await this.findForOrg(id, orgId);
+    if (changes.name !== undefined) event.name = changes.name.trim();
+    if (changes.eventDate !== undefined) {
+      event.eventDate = changes.eventDate ? new Date(changes.eventDate) : null;
+    }
+    if (changes.groupingEnabled !== undefined) event.groupingEnabled = changes.groupingEnabled;
+    if (changes.groupLabel !== undefined) event.groupLabel = changes.groupLabel?.trim() || null;
     return this.repo.save(event);
   }
 

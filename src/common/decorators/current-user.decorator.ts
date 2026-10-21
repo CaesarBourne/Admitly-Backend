@@ -19,6 +19,7 @@ export interface AuthUser {
   name?: string;
   seatNumber?: string | null;
   seatGroupName?: string | null;
+  groupLabel?: string;
   inactive?: boolean;
   admissionStatus?: 'pending' | 'admitted';
   jti?: string;
