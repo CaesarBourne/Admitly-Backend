@@ -2,9 +2,11 @@ import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/co
 import { JwtService } from '@nestjs/jwt';
 import { randomUUID } from 'node:crypto';
 import { AdminUsersService } from '../admin-users/admin-users.service';
+import { AdminUser } from '../admin-users/entities/admin-user.entity';
 import { Role } from '../common/enums/role.enum';
 import { Invitee, inviteeGroupInfo } from '../invitees/entities/invitee.entity';
 import { InviteesService } from '../invitees/invitees.service';
+import { Organization } from '../organizations/entities/organization.entity';
 import { OrganizationsService } from '../organizations/organizations.service';
 import { LoginDto } from './dto/login.dto';
 import { SignupDto } from './dto/signup.dto';
@@ -18,6 +20,8 @@ export interface AdminAuthResult {
     email: string;
     name?: string;
     role: Role;
+    /** App-wide admin — can change invite limits for every account. */
+    isPlatformAdmin: boolean;
   };
 }
 
@@ -57,7 +61,7 @@ export class AuthService {
     });
     return {
       accessToken: this.signAdmin(admin.id, org.id, admin.role),
-      user: { id: admin.id, orgId: org.id, orgName: org.name, email: admin.email, name: admin.name, role: admin.role },
+      user: this.adminSummary(admin, org),
     };
   }
 
@@ -73,7 +77,7 @@ export class AuthService {
     const org = await this.organizations.findById(admin.orgId);
     return {
       accessToken: this.signAdmin(admin.id, admin.orgId, admin.role),
-      user: { id: admin.id, orgId: org.id, orgName: org.name, email: admin.email, name: admin.name, role: admin.role },
+      user: this.adminSummary(admin, org),
     };
   }
 
@@ -114,6 +118,18 @@ export class AuthService {
       eventId: invitee.eventId,
       jti,
     });
+  }
+
+  private adminSummary(admin: AdminUser, org: Organization) {
+    return {
+      id: admin.id,
+      orgId: org.id,
+      orgName: org.name,
+      email: admin.email,
+      name: admin.name,
+      role: admin.role,
+      isPlatformAdmin: admin.isPlatformAdmin,
+    };
   }
 
   private inviteeSummary(invitee: Invitee) {

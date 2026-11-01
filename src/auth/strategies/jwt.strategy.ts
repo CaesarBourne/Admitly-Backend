@@ -46,6 +46,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         orgId: admin.orgId,
         orgName: org.name,
         role: admin.role,
+        isPlatformAdmin: admin.isPlatformAdmin,
         email: admin.email,
         name: admin.name,
       };

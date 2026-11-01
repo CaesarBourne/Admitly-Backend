@@ -14,7 +14,9 @@ async function bootstrap() {
     fs.mkdirSync(path.dirname(dbFile), { recursive: true });
   }
 
-  const app = await NestFactory.create(AppModule, { bufferLogs: false });
+  // rawBody keeps the untouched request body around so the Paystack webhook can
+  // verify its HMAC-SHA512 signature.
+  const app = await NestFactory.create(AppModule, { bufferLogs: false, rawBody: true });
   const config = app.get(ConfigService);
 
   app.useGlobalPipes(

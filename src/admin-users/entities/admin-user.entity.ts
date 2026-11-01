@@ -37,6 +37,11 @@ export class AdminUser {
   @Column({ type: 'varchar', default: Role.OWNER })
   role: Role;
 
+  /** App-wide administrator: can read every account and change invite limits.
+   *  Unrelated to the org-scoped `role` above. */
+  @Column({ default: false })
+  isPlatformAdmin: boolean;
+
   @Column({ default: true })
   isActive: boolean;
 

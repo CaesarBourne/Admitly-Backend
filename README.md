@@ -7,11 +7,13 @@ admin-uploaded invitee photos.
 ## Data model
 
 ```
-Organization (tenant)
-  └─ AdminUser   (owner | admin — org staff who sign in with email/password)
+Organization (tenant = customer account, with the invite allowance)
+  └─ AdminUser   (owner | admin — org staff who sign in with email/password;
+                  isPlatformAdmin marks app-wide admins)
   └─ Event       (one admission-tracked event, e.g. a wedding or conference)
        └─ Invitee     (QR invite token, seat number, admission status, photo)
        └─ SeatGroup   (named group with a configurable per-group max size)
+  └─ Payment     (Paystack checkout attempts)
 ```
 
 Every query an admin makes is scoped by `orgId` pulled from their JWT — there
@@ -42,6 +44,47 @@ Production is expected to run Postgres with `synchronize: false` — holds
 real tenant data, so schema changes are applied manually. Set `DB_TYPE=postgres`
 plus the `DB_*` vars in `.env`, then apply `src/**/entities/*.ts` as SQL
 against your Postgres provider (Supabase, RDS, etc.) before deploying.
+Run everything in `docs/migrations/` first.
+
+### Invite limits, plans and billing
+
+Every account (organization) may create **50 invites in total, across all of
+its events** on the free plan; paying through Paystack raises that to **500**.
+Both numbers are stored in `platform_settings` and can be changed at runtime by
+a platform admin:
+
+- `GET/PATCH /platform/settings` — the free and paid limits for everyone.
+- `GET /platform/organizations?search=` and
+  `PATCH /platform/organizations/:orgId/limits` — one account's limit and plan.
+- `GET /billing/entitlements` — the account's own plan, limit and usage.
+
+Creating an invite past the allowance returns **402 `InviteLimitReached`**.
+
+App-wide admins are flagged with `AdminUsers.isPlatformAdmin`. Seed the first
+one (idempotent; promotes an existing account, or creates it when
+`PLATFORM_ADMIN_PASSWORD` is set). Put the values in `.env` (gitignored — not
+`.env.example`, which is committed):
+
+```dotenv
+PLATFORM_ADMIN_EMAIL=caesaradek@gmail.com
+PLATFORM_ADMIN_PASSWORD=choose-a-strong-password
+```
+
+Then:
+
+```bash
+npm run seed:platform-admin
+```
+
+The script loads `.env` itself, so exporting the variables in the shell is only
+needed if you prefer that (shell values win).
+
+Paystack is optional: leave `PAYSTACK_SECRET_KEY` empty and the app still runs,
+with the upgrade endpoint returning 503. Once the keys are set, upgrades go
+through Paystack's hosted checkout and are completed either by the callback
+(`GET /billing/paystack/verify`) or the signed webhook
+(`POST /billing/paystack/webhook`). Set `APP_URL` (and optionally
+`PAYSTACK_UPGRADE_AMOUNT_MINOR`, in kobo) too.
 
 ### Invitee photo storage (Supabase Storage)
 
@@ -74,3 +117,10 @@ fail until configured.
 | POST | `/invitees/:id/admit` | Mark admitted at the entrance |
 | POST | `/invitees/:id/avatar` | Admin uploads an invitee's photo (multipart) |
 | GET/POST/PATCH/DELETE | `/events/:eventId/seat-groups`, `/seat-groups/:id` | Seat group CRUD |
+| GET | `/billing/entitlements` | Plan, invite limit and usage for the account |
+| POST | `/billing/paystack/initialize` | Start a Paystack checkout for the paid plan |
+| GET | `/billing/paystack/verify?reference=` | Verify a payment and apply the upgrade |
+| POST | `/billing/paystack/webhook` | Paystack webhook (public, HMAC-verified) |
+| GET/PATCH | `/platform/settings` | App-wide free/paid limits (platform admin) |
+| GET | `/platform/organizations` | Accounts with usage (platform admin) |
+| PATCH | `/platform/organizations/:orgId/limits` | One account's limit and plan (platform admin) |

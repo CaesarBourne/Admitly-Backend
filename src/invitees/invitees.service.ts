@@ -7,6 +7,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { randomBytes } from 'node:crypto';
 import { Repository } from 'typeorm';
+import { EntitlementsService } from '../billing/entitlements.service';
 import { StorageService } from '../storage/storage.service';
 import { Invitee } from './entities/invitee.entity';
 import { SeatGroup } from './entities/seat-group.entity';
@@ -19,9 +20,13 @@ export class InviteesService {
     @InjectRepository(Invitee) private readonly repo: Repository<Invitee>,
     @InjectRepository(SeatGroup) private readonly seatGroupRepo: Repository<SeatGroup>,
     private readonly storage: StorageService,
+    private readonly entitlements: EntitlementsService,
   ) {}
 
   async create(orgId: string, eventId: string, name: string): Promise<Invitee> {
+    // The invite allowance is per account and shared by every event, so it is
+    // checked here rather than per event.
+    await this.entitlements.assertInviteCapacity(orgId);
     const inviteToken = randomBytes(32).toString('hex');
     const invitee = this.repo.create({
       orgId,

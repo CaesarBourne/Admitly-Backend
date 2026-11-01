@@ -58,4 +58,17 @@ export class AdminUsersService {
   async verifyPassword(admin: AdminUser, password: string): Promise<boolean> {
     return bcrypt.compare(password, admin.passwordHash);
   }
+
+  /** Grants (or revokes) app-wide admin rights. When a password is supplied it
+   *  is also reset — handy for bootstrapping the first platform admin. */
+  async promoteToPlatformAdmin(
+    id: string,
+    password?: string,
+    isPlatformAdmin = true,
+  ): Promise<AdminUser> {
+    const changes: Partial<AdminUser> = { isPlatformAdmin, isActive: true };
+    if (password) changes.passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
+    await this.repo.update(id, changes);
+    return this.findById(id);
+  }
 }

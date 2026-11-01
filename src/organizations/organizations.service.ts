@@ -37,4 +37,13 @@ export class OrganizationsService {
     if (!org) throw new NotFoundException('Organization not found.');
     return org;
   }
+
+  /** Returns the organization with this name, creating it if it doesn't exist
+   *  yet. Used by the platform-admin seed, which needs somewhere to hang the
+   *  first app-wide admin account. */
+  async findOrCreateByName(name: string): Promise<Organization> {
+    const existing = await this.repo.findOne({ where: { slug: slugify(name) } });
+    if (existing) return existing;
+    return this.create(name);
+  }
 }

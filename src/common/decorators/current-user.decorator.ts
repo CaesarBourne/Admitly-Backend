@@ -15,6 +15,8 @@ export interface AuthUser {
   orgName?: string;
   eventId?: string;
   role?: Role;
+  /** True for app-wide (platform) admins — they can change limits for any account. */
+  isPlatformAdmin?: boolean;
   email?: string | null;
   name?: string;
   seatNumber?: string | null;

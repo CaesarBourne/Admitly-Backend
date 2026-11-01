@@ -8,6 +8,9 @@ import { AdminUser } from './admin-users/entities/admin-user.entity';
 import { AdminUsersModule } from './admin-users/admin-users.module';
 import { AuthModule } from './auth/auth.module';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
+import { BillingModule } from './billing/billing.module';
+import { Payment } from './billing/entities/payment.entity';
+import { PlatformSettings } from './billing/entities/platform-settings.entity';
 import configuration from './config/configuration';
 import { validationSchema } from './config/validation';
 import { Event } from './events/entities/event.entity';
@@ -17,6 +20,7 @@ import { SeatGroup } from './invitees/entities/seat-group.entity';
 import { InviteesModule } from './invitees/invitees.module';
 import { Organization } from './organizations/entities/organization.entity';
 import { OrganizationsModule } from './organizations/organizations.module';
+import { PlatformModule } from './platform/platform.module';
 import { StorageModule } from './storage/storage.module';
 
 const dnsLogger = new Logger('DatabaseDns');
@@ -66,7 +70,15 @@ async function resolveHostReliably(host: string, attempts = 4): Promise<string> 
       useFactory: async (config: ConfigService) => {
         const type = config.get<'sqlite' | 'postgres'>('db.type');
         const common = {
-          entities: [Organization, AdminUser, Event, Invitee, SeatGroup],
+          entities: [
+            Organization,
+            AdminUser,
+            Event,
+            Invitee,
+            SeatGroup,
+            PlatformSettings,
+            Payment,
+          ],
           autoLoadEntities: true,
         };
         if (type === 'postgres') {
@@ -101,6 +113,8 @@ async function resolveHostReliably(host: string, attempts = 4): Promise<string> 
     EventsModule,
     InviteesModule,
     StorageModule,
+    BillingModule,
+    PlatformModule,
   ],
   providers: [
     // Every route requires a JWT unless @Public(); then rate-limit everything.

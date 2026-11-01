@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { BillingModule } from '../billing/billing.module';
 import { EventsModule } from '../events/events.module';
 import { StorageModule } from '../storage/storage.module';
 import { Invitee } from './entities/invitee.entity';
@@ -10,7 +11,12 @@ import { SeatGroupsController } from './seat-groups.controller';
 import { SeatGroupsService } from './seat-groups.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Invitee, SeatGroup]), EventsModule, StorageModule],
+  imports: [
+    TypeOrmModule.forFeature([Invitee, SeatGroup]),
+    EventsModule,
+    StorageModule,
+    BillingModule,
+  ],
   controllers: [InviteesController, SeatGroupsController],
   providers: [InviteesService, SeatGroupsService],
   exports: [InviteesService, SeatGroupsService],
